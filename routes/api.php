@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('auth')->group(function () {
     Route::post('send-link', [AuthController::class, 'sendLink']);
     Route::post('verify',    [AuthController::class, 'verifyToken']);
+    Route::post('emprendedor/register', [AuthController::class, 'emprendedorRegister']);
+    Route::post('emprendedor/login',    [AuthController::class, 'emprendedorLogin']);
 });
 
 // ── Locales (público) ─────────────────────────────────────────────────────────
@@ -38,5 +40,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('productos',                     [EmprendedorController::class, 'guardarProducto']);
         Route::post('pedidos/{pedido}/confirmar',    [EmprendedorController::class, 'confirmarPedido']);
         Route::post('pedidos/{pedido}/listo',        [EmprendedorController::class, 'marcarListo']);
+        Route::post('pedidos/{pedido}/entregar',     [EmprendedorController::class, 'marcarEntregado']);
     });
 });

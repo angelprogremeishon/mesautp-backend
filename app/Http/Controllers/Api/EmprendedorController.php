@@ -129,11 +129,18 @@ class EmprendedorController extends Controller
             $data['foto'] = $request->file('foto')->store('productos', 'public');
         }
 
-        $producto = Producto::create([
-            ...$data,
-            'local_id'   => $local->id,
-            'disponible' => $data['cantidad_disponible'] > 0,
-        ]);
+        if ($request->boolean('es_menu_dia')) {
+            $producto = Producto::updateOrCreate(
+                ['local_id' => $local->id, 'es_menu_dia' => true],
+                [...$data, 'disponible' => $data['cantidad_disponible'] > 0],
+            );
+        } else {
+            $producto = Producto::create([
+                ...$data,
+                'local_id'   => $local->id,
+                'disponible' => $data['cantidad_disponible'] > 0,
+            ]);
+        }
 
         return response()->json(['producto' => $producto, 'message' => 'Producto agregado.'], 201);
     }
@@ -149,6 +156,13 @@ class EmprendedorController extends Controller
     {
         abort_if($pedido->local_id !== Auth::user()->local?->id, 403);
         $pedido->update(['estado' => 'listo']);
+        return response()->json(['pedido' => $pedido->fresh()]);
+    }
+
+    public function marcarEntregado(Pedido $pedido)
+    {
+        abort_if($pedido->local_id !== Auth::user()->local?->id, 403);
+        $pedido->update(['estado' => 'entregado']);
         return response()->json(['pedido' => $pedido->fresh()]);
     }
 

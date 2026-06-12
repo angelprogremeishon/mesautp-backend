@@ -21,7 +21,8 @@ return [
 
     'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:5173'), 'http://localhost:3000'],
 
-    'allowed_origins_patterns' => [],
+    // Dev: permitir cualquier puerto de localhost (Vite puede cambiar de puerto).
+    'allowed_origins_patterns' => ['/^http:\/\/localhost:\d+$/'],
 
     'allowed_headers' => ['*'],
 
