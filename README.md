@@ -1,59 +1,178 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# MesaUTP — API Backend (Laravel 12)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+API REST y panel de administración de **MesaUTP**, el marketplace de comida para
+estudiantes de **UTP Ate**. Sirve los datos al frontend (SPA React) y provee un
+panel admin con Filament.
 
-## About Laravel
+> Frontend (SPA React): repositorio **mesautp-frontend**.
+> Documento de requerimientos: `../DOCUMENTACION_REQUERIMIENTOS.md`.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Stack
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Laravel 12** (PHP 8.2+)
+- **MySQL**
+- **Laravel Sanctum** — autenticación por token Bearer
+- **Filament** — panel de administración (`/admin`)
+- **Mail** — envío del enlace mágico (magic link)
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## Requisitos previos
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- PHP 8.2 o superior
+- Composer
+- MySQL (o MariaDB)
+- Node.js (solo si vas a compilar assets de Filament/Vite del backend)
 
-## Laravel Sponsors
+---
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Instalación
 
-### Premium Partners
+```bash
+# 1. Instalar dependencias
+composer install
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+# 2. Copiar variables de entorno
+copy .env.example .env        # Windows
+# cp .env.example .env        # Linux/Mac
 
-## Contributing
+# 3. Generar la APP_KEY
+php artisan key:generate
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+# 4. Configurar la base de datos en .env (ver más abajo)
 
-## Code of Conduct
+# 5. Migrar y poblar datos de ejemplo
+php artisan migrate --seed
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# 6. Enlazar el almacenamiento público (para las fotos)
+php artisan storage:link
 
-## Security Vulnerabilities
+# 7. Levantar el servidor
+php artisan serve
+# API disponible en http://localhost:8000
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+## Variables de entorno clave (`.env`)
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```env
+APP_URL=http://localhost:8000
+FRONTEND_URL=http://localhost:5173
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=mesautp
+DB_USERNAME=root
+DB_PASSWORD=
+
+# Correo (magic link). En desarrollo puedes usar "log" para ver el enlace en storage/logs
+MAIL_MAILER=log
+MAIL_FROM_ADDRESS="no-reply@mesautp.pe"
+MAIL_FROM_NAME="MesaUTP"
+
+# Sanctum / CORS — orígenes permitidos del frontend
+SANCTUM_STATEFUL_DOMAINS=localhost:5173
+```
+
+> Con `MAIL_MAILER=log`, el enlace mágico se escribe en `storage/logs/laravel.log`
+> en vez de enviarse por correo — útil para desarrollo.
+
+---
+
+## Estructura relevante
+
+```
+app/
+├── Http/Controllers/Api/
+│   ├── AuthController.php          # send-link, verify, me, logout
+│   ├── LocalesController.php       # externos / internos (lista + detalle)
+│   ├── PedidoController.php        # crear, listar, calificar
+│   └── EmprendedorController.php   # dashboard, registro, productos, confirmar/listo
+├── Filament/Resources/             # panel admin (Local, User)
+├── Mail/MagicLinkMail.php          # correo del enlace mágico
+└── Models/                         # User, Local, Categoria, Producto, Pedido, Resena, MagicLink
+database/
+├── migrations/                     # esquema
+└── seeders/                        # CategoriaSeeder, LocalSeeder, DatabaseSeeder
+routes/
+├── api.php                         # API REST (ver tabla abajo)
+└── web.php                         # rutas web / admin
+```
+
+---
+
+## Endpoints
+
+### Públicos
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| POST | `/api/auth/send-link` | Envía el enlace mágico al correo @utp.edu.pe |
+| POST | `/api/auth/verify` | Verifica el token → devuelve `{ user, token }` |
+| GET | `/api/locales/externos` | Lista paginada de locales externos |
+| GET | `/api/locales/externos/{id}` | Detalle de local externo |
+| GET | `/api/locales/internos` | Lista paginada de locales internos |
+| GET | `/api/locales/internos/{id}` | Detalle de oferta interna |
+
+### Autenticados — `Authorization: Bearer <token>`
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/api/auth/me` | Usuario autenticado |
+| POST | `/api/auth/logout` | Cerrar sesión |
+| GET | `/api/pedidos` | Pedidos del usuario |
+| POST | `/api/pedidos` | Crear reserva |
+| POST | `/api/pedidos/{id}/calificar` | Calificar pedido entregado |
+| GET | `/api/emprendedor` | Dashboard del emprendedor |
+| POST | `/api/emprendedor/registro` | Registrar local |
+| POST | `/api/emprendedor/local` | Actualizar local |
+| POST | `/api/emprendedor/productos` | Publicar/editar oferta |
+| POST | `/api/emprendedor/pedidos/{id}/confirmar` | Confirmar pedido |
+| POST | `/api/emprendedor/pedidos/{id}/listo` | Marcar pedido listo |
+
+> **Importante:** las listas de locales devuelven paginación de Laravel.
+> El array de resultados está en `response.data.data`.
+
+---
+
+## Modelo de datos
+
+- **User** — usuario (estudiante / emprendedor / admin). `password` es nullable (login por magic link).
+- **Local** — `tipo`: `interno` | `externo`; `estado`: `pendiente` | `aprobado`; flag `activo`. Expone `foto_url`.
+- **Categoria** — categoría del local.
+- **Producto** — oferta/menú del local (`es_menu_dia`, `cantidad_disponible`).
+- **Pedido** — `estado`: `pendiente` → `confirmado` → `listo` → `entregado` | `cancelado`.
+- **Resena** — calificación (estrellas + comentario) ligada a un pedido.
+- **MagicLink** — token temporal para el login sin contraseña.
+
+Scopes útiles en `Local`: `aprobados()`, `externos()`, `internos()`.
+
+---
+
+## Panel de administración
+
+Disponible en `http://localhost:8000/admin` (Filament). Permite aprobar locales,
+gestionar usuarios y revisar contenido.
+
+---
+
+## Autenticación (flujo magic link)
+
+1. El frontend llama `POST /api/auth/send-link` con el correo @utp.edu.pe.
+2. El backend genera un `MagicLink` y envía el enlace al correo (o al log en dev).
+3. El usuario abre el enlace → el frontend llama `POST /api/auth/verify` con el token.
+4. El backend valida y responde `{ user, token }` (token Sanctum).
+5. El frontend guarda el token y lo envía como `Authorization: Bearer` en cada request.
+
+---
+
+## Comandos útiles
+
+```bash
+php artisan migrate:fresh --seed   # recrea la BD con datos de ejemplo
+php artisan storage:link           # enlaza storage público (fotos)
+php artisan route:list             # lista todas las rutas
+php artisan tinker                 # consola interactiva
+```
