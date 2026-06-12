@@ -23,8 +23,12 @@ class User extends Authenticatable implements FilamentUser
      */
     protected $fillable = [
         'name',
+        'apellido',
+        'dni',
         'email',
         'password',
+        'pin',
+        'registro_completo',
         'role',
     ];
 
@@ -35,6 +39,7 @@ class User extends Authenticatable implements FilamentUser
      */
     protected $hidden = [
         'password',
+        'pin',
         'remember_token',
     ];
 
@@ -46,8 +51,10 @@ class User extends Authenticatable implements FilamentUser
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'email_verified_at'  => 'datetime',
+            'password'           => 'hashed',
+            'pin'                => 'hashed',
+            'registro_completo'  => 'boolean',
         ];
     }
 

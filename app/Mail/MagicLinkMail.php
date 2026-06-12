@@ -26,7 +26,7 @@ class MagicLinkMail extends Mailable
         $frontend = rtrim(env('FRONTEND_URL', 'http://localhost:5173'), '/');
 
         return new Content(view: 'emails.magic-link', with: [
-            'url' => "{$frontend}/auth/callback?token={$this->token}",
+            'url' => "{$frontend}/registro?token={$this->token}",
         ]);
     }
 

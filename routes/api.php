@@ -8,8 +8,14 @@ use Illuminate\Support\Facades\Route;
 
 // ── Auth (público) ────────────────────────────────────────────────────────────
 Route::prefix('auth')->group(function () {
-    Route::post('send-link', [AuthController::class, 'sendLink']);
-    Route::post('verify',    [AuthController::class, 'verifyToken']);
+    // Flujo nuevo: registro con enlace + ingreso con PIN
+    Route::post('check-email',        [AuthController::class, 'checkEmail']);
+    Route::post('send-link',          [AuthController::class, 'sendLink']);          // envía enlace de registro
+    Route::post('verify',             [AuthController::class, 'verifyToken']);       // valida token del enlace
+    Route::post('completar-registro', [AuthController::class, 'completeRegistro']);  // crea cuenta + PIN
+    Route::post('login-pin',          [AuthController::class, 'loginPin']);          // ingreso con PIN
+
+    // Emprendedor (correo + contraseña) — se mantiene
     Route::post('emprendedor/register', [AuthController::class, 'emprendedorRegister']);
     Route::post('emprendedor/login',    [AuthController::class, 'emprendedorLogin']);
 });

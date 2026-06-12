@@ -66,14 +66,31 @@ class EmprendedorController extends Controller
         }
         unset($data['categoria']);
 
+        $user = Auth::user();
+
+        // Interno: el código de matrícula y la descripción se derivan de la cuenta
+        // del estudiante (no se le piden de nuevo). El código sale del correo
+        // institucional (la parte antes de @utp.edu.pe, en mayúsculas).
+        if (($data['tipo'] ?? null) === 'interno') {
+            if (empty($data['codigo_matricula'])) {
+                $data['codigo_matricula'] = strtoupper(explode('@', $user->email)[0]);
+            }
+            if (empty($data['descripcion'])) {
+                $nombreCompleto = trim($user->name.' '.($user->apellido ?? ''));
+                $data['descripcion'] = $nombreCompleto !== '' ? $nombreCompleto : null;
+            }
+        }
+
         if ($request->hasFile('foto')) {
             $data['foto'] = $request->file('foto')->store('locales', 'public');
         }
 
         $local = Local::create([
             ...$data,
-            'user_id' => Auth::id(),
-            'estado'  => 'pendiente',
+            'user_id' => $user->id,
+            // Prototipo: se aprueba automáticamente (sin panel de admin todavía).
+            'estado'  => 'aprobado',
+            'activo'  => true,
         ]);
 
         Auth::user()->update(['role' => 'emprendedor']);
@@ -122,7 +139,11 @@ class EmprendedorController extends Controller
             'precio'             => 'required|numeric|min:0',
             'cantidad_disponible'=> 'required|integer|min:0',
             'es_menu_dia'        => 'boolean',
+            'hora_inicio'        => 'nullable|date_format:H:i',
+            'hora_fin'           => 'nullable|date_format:H:i|after:hora_inicio',
             'foto'               => 'nullable|image|max:2048',
+        ], [
+            'hora_fin.after' => 'La hora de fin debe ser posterior a la de inicio.',
         ]);
 
         if ($request->hasFile('foto')) {
