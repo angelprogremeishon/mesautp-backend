@@ -32,6 +32,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Panel emprendedor
     Route::prefix('emprendedor')->group(function () {
         Route::get('/',                              [EmprendedorController::class, 'dashboard']);
+        Route::get('calificaciones',                 [EmprendedorController::class, 'calificaciones']);
         Route::post('registro',                      [EmprendedorController::class, 'registrar']);
         Route::post('local',                         [EmprendedorController::class, 'actualizarLocal']);
         Route::post('productos',                     [EmprendedorController::class, 'guardarProducto']);

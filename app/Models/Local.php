@@ -10,7 +10,8 @@ class Local extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'categoria_id', 'nombre', 'tipo', 'descripcion', 'foto',
+        'user_id', 'categoria_id', 'codigo_matricula', 'ciclo_carrera',
+        'nombre', 'tipo', 'descripcion', 'foto',
         'direccion', 'punto_entrega', 'distancia_metros', 'horario',
         'precio_min', 'precio_max', 'yape', 'plin', 'whatsapp',
         'estado', 'activo', 'rating_promedio', 'total_resenas',
