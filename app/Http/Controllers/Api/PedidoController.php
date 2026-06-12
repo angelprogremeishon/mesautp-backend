@@ -14,7 +14,7 @@ class PedidoController extends Controller
 {
     public function index()
     {
-        $pedidos = Pedido::with(['local', 'producto'])
+        $pedidos = Pedido::with(['local', 'producto', 'resena'])
             ->where('user_id', Auth::id())
             ->latest()
             ->get();
